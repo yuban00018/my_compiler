@@ -5,60 +5,51 @@
 #include <algorithm>
 using namespace std;
 
-void read_input(ifstream &infile,ofstream &outfile){
-    string sentence;
-    vector<int> bound;
+enum states{START,WORD,NUMBER,OPERATOR,BOUND};
+
+void tokenizer(ifstream &infile,ofstream &outfile){
+    char ch;
+    int prestate = START;
+    int state = START;
+    string word = "";
     vector<string> words;
-    while(infile>>sentence){
-        // 转小写
-        transform(sentence.begin(),sentence.end(),sentence.begin(),(int(*)(int))tolower);
-        bound.clear();
-        words.clear();
-        // 寻找操作符位置
-        for(const string& split : alphabet::get_operators()){
-            string::size_type pos=0;
-            while((pos = sentence.find(split, pos))!=string::npos){
-                // 找到 = 可能是 := , <= 或 >=
-                if(sentence[pos-1]=='<'||sentence[pos-1]=='>'||sentence[pos-1]==':'){
-                    pos++;
-                    continue;
-                }
-                bound.emplace_back(pos);
-                bound.emplace_back(pos+split.size());
-                pos++;
-            }
+    while((ch = infile.get())!=EOF){
+        if(ch>='A'&&ch<='Z')ch = tolower(ch);
+        if(isalpha(ch)||ch=='_'){
+            prestate = state;
+            state = WORD;
+        } else if (isdigit(ch)){
+            prestate = state;
+            if(state!=WORD)
+                state=NUMBER;
+        } else if(ch=='='||ch==':'||ch=='+'||ch=='-'||ch=='*'||ch=='/'||ch=='#'||ch=='<'||ch=='>'){
+            prestate = state;
+            state = OPERATOR;
+        } else if(ch=='.'||ch==';'||ch=='('||ch==')'||ch==','){
+            prestate = state;
+            state = BOUND;
+        } else if(ch==' '||ch=='\n'){
+            prestate = state;
+            state = START;
+        } else{
+            prestate = state;
+            state = START;
         }
-        // 寻找界符位置
-        for(const string& split : alphabet::get_boundary()){
-            string::size_type pos=0;
-            while((pos = sentence.find(split, pos))!=string::npos){
-                bound.emplace_back(pos);
-                bound.emplace_back(pos+split.size());
-                pos++;
-            }
+        if(prestate!=state||state==BOUND){
+            if(word!="")words.emplace_back(word);
+            word = "";
         }
-        // 得到所有分切位置
-        sort(bound.begin(),bound.end());
-        int start = 0;
-        // 语句切片
-        for(int end:bound){
-            string sub = sentence.substr(start,end-start);
-            if(sub!="")words.emplace_back(sub);
-            start = end;
-        }
-        // 如果不需要切片输入整句
-        if(bound.empty())words.emplace_back(sentence);
-        // 获取类型
-        for(string word: words){
-            cout<<"("<<alphabet::get_code(word)<<", "<<word<<")"<<endl;
-            outfile<<"("<<alphabet::get_code(word)<<", "<<word<<")"<<endl;
-        }
+        if(state!=START)word+=ch;
+    }
+    for(string word:words){
+        cout<<"("<<alphabet::get_code(word)<<", "<<word<<")"<<endl;
+        outfile<<"("<<alphabet::get_code(word)<<", "<<word<<")"<<endl;
     }
 }
 
 int main() {
     ifstream infile("infile2.txt");
     ofstream outfile("output.txt");
-    read_input(infile,outfile);
+    tokenizer(infile,outfile);
     return 0;
 }
