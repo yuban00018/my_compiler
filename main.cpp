@@ -41,6 +41,7 @@ void tokenizer(ifstream &infile,ofstream &outfile){
         }
         if(state!=START)word+=ch;
     }
+    if(word!="")words.emplace_back(word);
     for(string word:words){
         cout<<"("<<alphabet::get_code(word)<<", "<<word<<")"<<endl;
         outfile<<"("<<alphabet::get_code(word)<<", "<<word<<")"<<endl;
@@ -48,7 +49,7 @@ void tokenizer(ifstream &infile,ofstream &outfile){
 }
 
 int main() {
-    ifstream infile("infile2.txt");
+    ifstream infile("infile3.txt");
     ofstream outfile("output.txt");
     tokenizer(infile,outfile);
     return 0;
