@@ -4,7 +4,7 @@ procedure gcd;
         while r#0 do
             begin
                 q:=m/n;
-                r:=m-(q*n;
+                r:=m-(q*n);
                 m:=n;
                 n:=r;
             end

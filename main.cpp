@@ -3,54 +3,83 @@
 #include <fstream>
 #include <vector>
 #include <algorithm>
+
 using namespace std;
 
-enum states{START,WORD,NUMBER,OPERATOR,BOUND};
+enum states {
+    START, WORD, NUMBER, OPERATOR, BOUND
+};
 
-void tokenizer(ifstream &infile,ofstream &outfile){
+void tokenizer(ifstream &infile, ofstream &outfile) {
     char ch;
+    // 设置初始状态
     int prestate = START;
     int state = START;
     string word = "";
     vector<string> words;
-    while((ch = infile.get())!=EOF){
-        if(ch>='A'&&ch<='Z')ch = tolower(ch);
-        if(isalpha(ch)||ch=='_'){
+    int count_line = 1;
+    while ((ch = infile.get()) != EOF) {
+        // 大写改小写
+        if (ch >= 'A' && ch <= 'Z')ch = tolower(ch);
+        // 如果是字母或下划线，认为是单词
+        if (isalpha(ch) || ch == '_') {
             prestate = state;
             state = WORD;
-        } else if (isdigit(ch)){
+            // 如果是非字母状态下连接数字，认为是数字开始
+        } else if (isdigit(ch)) {
             prestate = state;
-            if(state!=WORD)
-                state=NUMBER;
-        } else if(ch=='='||ch==':'||ch=='+'||ch=='-'||ch=='*'||ch=='/'||ch=='#'||ch=='<'||ch=='>'){
+            if (state != WORD)
+                state = NUMBER;
+            // 切换操作符状态
+        } else if (ch == '=' || ch == ':' || ch == '+' || ch == '-' || ch == '*' || ch == '/' || ch == '#' ||
+                   ch == '<' || ch == '>') {
             prestate = state;
             state = OPERATOR;
-        } else if(ch=='.'||ch==';'||ch=='('||ch==')'||ch==','){
+            // 边界状态
+        } else if (ch == '.' || ch == ';' || ch == '(' || ch == ')' || ch == ',') {
             prestate = state;
             state = BOUND;
-        } else if(ch==' '||ch=='\n'){
+            // 换行
+        } else if (ch == ' ' || ch == '\n') {
+            if (ch == '\n')count_line++;
             prestate = state;
             state = START;
-        } else{
+            // 异常状态，重置到start
+        } else {
             prestate = state;
             state = START;
         }
-        if(prestate!=state||state==BOUND){
-            if(word!="")words.emplace_back(word);
+        // 状态切换则认为标识符切换，如果状态是边界则立刻输出，防止两个边界重叠
+        if (prestate != state || state == BOUND || prestate==OPERATOR&&word.size()==2) {
+            if (word != "") {
+                if (prestate == OPERATOR && alphabet::is_operators(word)
+                    || prestate != OPERATOR) {
+                    words.emplace_back(word);
+                    // 从map获得对应的标识符类型
+                    cout << "(" << alphabet::get_code(word) << ", " << word << ")" << endl;
+                    outfile << "(" << alphabet::get_code(word) << ", " << word << ")" << endl;
+                }
+                else{
+                    cout<<"error occur at line "<<count_line<<": "<<word<<endl;
+                    outfile<<"error occur at line "<<count_line<<": "<<word<<endl;
+                }
+            }
             word = "";
         }
-        if(state!=START)word+=ch;
-    }
-    if(word!="")words.emplace_back(word);
-    for(string word:words){
-        cout<<"("<<alphabet::get_code(word)<<", "<<word<<")"<<endl;
-        outfile<<"("<<alphabet::get_code(word)<<", "<<word<<")"<<endl;
+        // 非异常状态，拼接新字符
+        if (state != START)word += ch;
     }
 }
 
 int main() {
-    ifstream infile("infile3.txt");
-    ofstream outfile("output.txt");
-    tokenizer(infile,outfile);
+    for (int i = 1; i < 6; i++) {
+        string in = "infile" + to_string(i) + ".txt";
+        string out = "output" + to_string(i) + ".txt";
+        ifstream infile(in);
+        ofstream outfile(out);
+        tokenizer(infile, outfile);
+        infile.close();
+        outfile.close();
+    }
     return 0;
 }
