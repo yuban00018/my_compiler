@@ -50,7 +50,7 @@ void tokenizer(ifstream &infile, ofstream &outfile) {
             state = START;
         }
         // 状态切换则认为标识符切换，如果状态是边界则立刻输出，防止两个边界重叠
-        if (prestate != state || state == BOUND || prestate==OPERATOR&&word.size()==2) {
+        if (prestate != state || state == BOUND || prestate==OPERATOR &&word.size()==2) {
             if (word != "") {
                 if (prestate == OPERATOR && alphabet::is_operators(word)
                     || prestate != OPERATOR) {
@@ -69,10 +69,16 @@ void tokenizer(ifstream &infile, ofstream &outfile) {
         // 非异常状态，拼接新字符
         if (state != START)word += ch;
     }
+    // 输出末尾的字符串
+    if(word !=""){
+        words.emplace_back(word);
+        cout << "(" << alphabet::get_code(word) << ", " << word << ")" << endl;
+        outfile << "(" << alphabet::get_code(word) << ", " << word << ")" << endl;
+    }
 }
 
 int main() {
-    for (int i = 1; i < 6; i++) {
+    for (int i = 1; i < 7; i++) {
         string in = "infile" + to_string(i) + ".txt";
         string out = "output" + to_string(i) + ".txt";
         ifstream infile(in);
