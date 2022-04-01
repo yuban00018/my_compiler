@@ -40,12 +40,14 @@ void tokenizer(ifstream &infile, ofstream &outfile) {
             prestate = state;
             state = BOUND;
             // 换行
-        } else if (ch == ' ' || ch == '\n') {
+        } else if (ch == ' ' || ch == '\n' || ch == '\t') {
             if (ch == '\n')count_line++;
             prestate = state;
             state = START;
             // 异常状态，重置到start
         } else {
+            cout<<"error occur at line "<<count_line<<": "<<ch<<endl;
+            outfile<<"error occur at line "<<count_line<<": "<<ch<<endl;
             prestate = state;
             state = START;
         }
