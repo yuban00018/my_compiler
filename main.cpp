@@ -18,6 +18,8 @@ void tokenizer(ifstream &infile, ofstream &outfile) {
     string word = "";
     vector<string> words;
     int count_line = 1;
+    string error_type = "";
+    bool valid = true;
     while ((ch = infile.get()) != EOF) {
         // 大写改小写
         if (ch >= 'A' && ch <= 'Z')ch = tolower(ch);
@@ -46,14 +48,29 @@ void tokenizer(ifstream &infile, ofstream &outfile) {
             state = START;
             // 异常状态，重置到start
         } else {
-            cout<<"error occur at line "<<count_line<<": "<<ch<<endl;
-            outfile<<"error occur at line "<<count_line<<": "<<ch<<endl;
+            cout << "error \"illegal character\" occur at line " << count_line << ": " << ch << endl;
+            outfile << "error \"illegal character\" occur at line " << count_line << ": " << ch << endl;
             prestate = state;
             state = START;
         }
+        // 遇到字符和数字以外的字符认为是单词结束，如果是非法状态则切换并输出错误
+        if(state != WORD && state != NUMBER && !valid){
+            valid = true;
+            cout << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
+            outfile << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
+            word = "";
+        }
+        if(!valid)word+=ch;
         // 状态切换则认为标识符切换，如果状态是边界则立刻输出，防止两个边界重叠
-        if (prestate != state || state == BOUND || prestate==OPERATOR &&word.size()==2) {
+        if (prestate != state || state == BOUND || (prestate==OPERATOR && word.size()==2)) {
+            if(prestate==NUMBER&&state==WORD){
+                valid = false;
+                error_type = "illegal number";
+                word += ch;
+                continue;
+            }
             if (word != "") {
+                // 标识符错误
                 if (prestate == OPERATOR && alphabet::is_operators(word)
                     || prestate != OPERATOR) {
                     words.emplace_back(word);
@@ -62,20 +79,35 @@ void tokenizer(ifstream &infile, ofstream &outfile) {
                     outfile << "(" << alphabet::get_code(word) << ", " << word << ")" << endl;
                 }
                 else{
-                    cout<<"error occur at line "<<count_line<<": "<<word<<endl;
-                    outfile<<"error occur at line "<<count_line<<": "<<word<<endl;
+                    error_type = "illegal operator";
+                    cout << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
+                    outfile << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
                 }
             }
             word = "";
         }
         // 非异常状态，拼接新字符
-        if (state != START)word += ch;
+        if (valid && state != START)word += ch;
     }
     // 输出末尾的字符串
-    if(word !=""){
-        words.emplace_back(word);
-        cout << "(" << alphabet::get_code(word) << ", " << word << ")" << endl;
-        outfile << "(" << alphabet::get_code(word) << ", " << word << ")" << endl;
+    if(word !=""&&valid){
+        // 标识符错误
+        if (prestate == OPERATOR && alphabet::is_operators(word)
+            || prestate != OPERATOR) {
+            words.emplace_back(word);
+            // 从map获得对应的标识符类型
+            cout << "(" << alphabet::get_code(word) << ", " << word << ")" << endl;
+            outfile << "(" << alphabet::get_code(word) << ", " << word << ")" << endl;
+        }
+        else{
+            error_type = "illegal operator";
+            cout << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
+            outfile << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
+        }
+        // 如果末尾的标识符是非法数字
+    }else if(word!=""){
+        cout << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
+        outfile << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
     }
 }
 
