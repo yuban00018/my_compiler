@@ -4,6 +4,7 @@
 #include "tokenlizer.h"
 #include "alphabet.h"
 #include <iostream>
+#define ACCEPT_ERROR_INPUT
 using namespace std;
 vector<pair<string,string>> tokenlizer(ifstream &infile, ofstream &outfile) {
     char ch;
@@ -54,6 +55,9 @@ vector<pair<string,string>> tokenlizer(ifstream &infile, ofstream &outfile) {
             valid = true;
             cout << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
             outfile << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
+#ifdef ACCEPT_ERROR_INPUT
+            result.emplace_back(pair<string,string>(alphabet::get_code(word), word));
+#endif
             word = "";
         }
         if(!valid)word+=ch;
@@ -79,6 +83,9 @@ vector<pair<string,string>> tokenlizer(ifstream &infile, ofstream &outfile) {
                     error_type = "illegal operator";
                     cout << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
                     outfile << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
+#ifdef ACCEPT_ERROR_INPUT
+                    result.emplace_back(pair<string,string>(alphabet::get_code(word), word));
+#endif
                 }
             }
             word = "";
@@ -89,8 +96,8 @@ vector<pair<string,string>> tokenlizer(ifstream &infile, ofstream &outfile) {
     // 输出末尾的字符串
     if(word !=""&&valid){
         // 标识符错误
-        if (prestate == OPERATOR && alphabet::is_operators(word)
-            || prestate != OPERATOR) {
+        if (prestate == OPERATOR && prestate == state && alphabet::is_operators(word)
+            || prestate != state) {
             words.emplace_back(word);
             // 从map获得对应的标识符类型
             result.emplace_back(pair<string,string>(alphabet::get_code(word), word));
@@ -101,11 +108,17 @@ vector<pair<string,string>> tokenlizer(ifstream &infile, ofstream &outfile) {
             error_type = "illegal operator";
             cout << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
             outfile << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
+#ifdef ACCEPT_ERROR_INPUT
+            result.emplace_back(pair<string,string>(alphabet::get_code(word), word));
+#endif
         }
         // 如果末尾的标识符是非法数字
     }else if(word!=""){
         cout << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
         outfile << "error \""<<error_type<<"\" occur at line " << count_line << ": " << word << endl;
+#ifdef ACCEPT_ERROR_INPUT
+        result.emplace_back(pair<string,string>(alphabet::get_code(word), word));
+#endif
     }
     return result;
 }

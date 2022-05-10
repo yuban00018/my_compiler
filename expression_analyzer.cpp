@@ -57,7 +57,7 @@ std::string get_error_type(Element e) {
 }
 
 std::vector<Element> next(Element current, Element type) {
-    auto t = first.find(current)->second;
+    auto t = prediction_table.find(current)->second;
     if (t.find(type) == t.end()) {
         std::cout << get_error_type(type);
         return {error};
@@ -69,6 +69,7 @@ std::vector<Element> next(Element current, Element type) {
 
 bool expression_validator(const std::vector<std::pair<Element, std::string>> &elements) {
     std::stack<Element> s;
+    s.push(null); //$
     s.push(expr_);
     int counter = 0;
     for (auto &token: elements) {

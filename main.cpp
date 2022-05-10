@@ -21,6 +21,7 @@ int main() {
                 elements_list.emplace_back(get_type(token.first), token.second);
             } else {
                 line++;
+                elements_list.emplace_back(null,""); //$
                 if (expression_validator(elements_list)) {
                     cout << "OK" << endl;
                 } else {
