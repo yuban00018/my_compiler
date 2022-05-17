@@ -40,7 +40,7 @@
 
 enum Element {
     // 终结符
-    null, // ε
+    null, // #
     ident,  // i
     number, // n
     plus_,   // +
