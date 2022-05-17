@@ -41,14 +41,14 @@
 enum Element {
     // 终结符
     null, // #
-    ident,  // i
-    number, // n
+    lparen, // (
+    rparen, // )
     plus_,   // +
     minus_,  // -
     times,  // *
     slash,  // /
-    lparen, // (
-    rparen, // )
+    number, // n
+    ident,  // i
     // 非终结符
     expr_, // e
     Expr,   // E
