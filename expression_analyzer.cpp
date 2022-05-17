@@ -57,12 +57,20 @@ std::string get_error_type(Element e) {
 }
 
 std::vector<Element> next(Element current, Element type) {
-    auto t = prediction_table.find(current)->second;
-    if (t.find(type) == t.end()) {
+    auto t = prediction_table.find(current)->second; //对于非终结符cur，能够接受的终结符类型map
+    if (t.find(type) == t.end()) { // 如果token的type不包含在该map中，则出错
         std::cout << get_error_type(type);
         return {error};
     }
-    std::vector<Element> res = t.find(type)->second;
+    /* 最左推导
+     * e -> PE | E
+     * 若type为plus_
+     * 栈:expr_ $ -> Plus Expr $
+     * */
+    std::vector<Element> res = t.find(type)->second; // res代表分析的展开
+    /*
+     * prediction_table->second为正序，入栈应该倒序
+     * */
     std::reverse(res.begin(), res.end());
     return res;
 }
@@ -72,17 +80,18 @@ bool expression_validator(const std::vector<std::pair<Element, std::string>> &el
     s.push(null); //$
     s.push(expr_);
     int counter = 0;
+    // 输入一个token
     for (auto &token: elements) {
         ++counter;
         // 如果不是终结符则循环
         while (s.top()>=expr_) {
-            auto cur = s.top();
-            s.pop();
-            auto t = next(cur, token.first);
-            if (!t.empty() && t.at(0) == error)return false;
-            for (auto &it: t) s.push(it);
+            auto cur = s.top(); // 拿栈顶
+            s.pop(); // 出栈
+            auto t = next(cur, token.first); // cur->非终结符 token.first->当前token的类型
+            if (!t.empty() && t.at(0) == error)return false; // 错误处理
+            for (auto &it: t) s.push(it); // 入栈
         }
-        if (s.top() != token.first) {
+        if (s.top() != token.first) { // 如果token类型和顶部（此时为终结符）不匹配，出错
             std::cout << counter << ':';
             std::cout << get_error_type(token.first) << '\n';
             return false;

@@ -63,6 +63,7 @@ enum Element {
     error
 };
 
+// <非终结符,<终结符,最左推导的非终结符序列>>
 const std::map<Element, std::map<Element, std::vector<Element>>> prediction_table = {
         {expr_,
                 {{plus_, {Plus,   Expr}},
