@@ -6,19 +6,19 @@
 
 const std::vector<std::pair<Element, std::vector<Element>>>
 ExpressionCalculator::production = {    // 文法：产生式
-        {null, {Expr}},
-        {Expr, {Expr, Plus, Term}},
-        {Expr, {Plus, Term}},
-        {Expr, {Term}},
-        {Term, {Term, Multi, Factor}},
-        {Term, {Factor}},
-        {Factor, {lparen, Expr, rparen}},
-        {Factor, {ident}},
-        {Factor, {number}},
-        {Plus, {plus_}},
-        {Plus, {minus_}},
-        {Multi, {times}},
-        {Multi, {slash}}};
+        {null, {Expr}},               //0
+        {Expr, {Expr, Plus, Term}},   //1
+        {Expr, {Plus, Term}},         //2
+        {Expr, {Term}},               //3
+        {Term, {Term, Multi, Factor}},//4
+        {Term, {Factor}},             //5
+        {Factor, {lparen, Expr, rparen}},//6
+        {Factor, {ident}},            //7
+        {Factor, {number}},           //8
+        {Plus, {plus_}},              //9
+        {Plus, {minus_}},             //10
+        {Multi, {times}},             //11
+        {Multi, {slash}}};            //12
 
 const std::vector<std::map<Element, std::pair<Action, int>>> ExpressionCalculator::f = { //LR(0)分析表
         // 0
@@ -165,18 +165,7 @@ const std::vector<std::map<Element, std::pair<Action, int>>> ExpressionCalculato
                 {slash, {Reduce, 4}},
                 {null, {Reduce, 4}}}};
 
-//Element getElement(const std::string& s)
-//{
-//    if (s == "number") return number;
-//    if (s == "ident") return ident;
-//    if (s == "plus") return plus_;
-//    if (s == "minus") return minus_;
-//    if (s == "times") return times;
-//    if (s == "slash") return slash;
-//    if (s == "lparen") return lparen;
-//    if (s == "rparen") return rparen;
-//    throw NoSuchElementException();
-//}
+
 std::ostream& operator<<(std::ostream& out, const Element& obj)
 {
     switch (obj)
@@ -283,7 +272,6 @@ TResult ExpressionCalculator::getLexval(Element obj, std::string token)
 {
     if (obj == number) return std::stoi(token);
     if (obj < number) return static_cast<TResult>(obj);
-    std::cout << static_cast<TResult>(obj);
     return 0;
 }
 
@@ -363,7 +351,7 @@ TResult ExpressionCalculator::calculate(const std::vector<std::pair<Element, std
                 sz = 0;
                 for (auto&& r : reduce)
                 {
-                    assert(r == std::get<1>(s.top()));
+                    assert(r == std::get<1>(s.top())); // 判断弹出的element是否和规约式一致
                     buffer[sz++] = std::get<2>(s.top());    // 栈顶的计算值压入buffer暂存
                     s.pop();    // 出栈
                 }
@@ -388,7 +376,7 @@ TResult ExpressionCalculator::calculate(const std::vector<std::pair<Element, std
                 else //:(
                     assert(false);
                 auto go = getNext(std::get<0>(s.top()), it.first);  // 获取下一步Action
-                assert(go.first == Goto);   // Action仅能为Reduce / Shift / Accept?
+                assert(go.first == Goto);   // Action仅能为Goto!
                 s.push(std::make_tuple(go.second, it.first, res));  // 状态入栈，继续分析。
             }
             else if (action.first == Accept)

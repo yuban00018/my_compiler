@@ -27,11 +27,11 @@ int main() {
                 elements_list.emplace_back(null,""); //$
                 ExpressionCalculator calculator;
                 cout << "==== 第" << line << "行 ==== " << endl;
-                cout << calculator.calculate(elements_list) << endl;
                 if (expression_validator(elements_list)) {
-                    cout << "OK" << endl<< endl;
+                    cout << "OK" << endl;
+                    cout << calculator.calculate(elements_list) << endl;
                 } else {
-                    cout << " occur at line: " << line << endl<< endl;
+                    cout << " occur at line: " << line << endl;
                 }
                 elements_list.clear();
             }
