@@ -388,7 +388,7 @@ TResult ExpressionCalculator::calculate(const std::vector<std::pair<Element, std
                 else //:(
                     assert(false);
                 auto go = getNext(std::get<0>(s.top()), it.first);  // 获取下一步Action
-                assert(go.first == Goto);   // Action仅能为Reduce / Shift / Accept
+                assert(go.first == Goto);   // Action仅能为Reduce / Shift / Accept?
                 s.push(std::make_tuple(go.second, it.first, res));  // 状态入栈，继续分析。
             }
             else if (action.first == Accept)
