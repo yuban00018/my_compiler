@@ -41,26 +41,6 @@
  * M -> /       {M.val:=/.lexval}
 */
 
-//enum Element
-//{   //终结符
-//    null, // #
-//    lparen, // (
-//    rparen, // )
-//    plus,   // +
-//    minus,  // -
-//    times,  // *
-//    slash,  // /
-//    number, // n
-//    ident,  // i
-//    //非终结符
-//    Expr,   // E
-//    Term,   // T
-//    Factor, // F
-//    Ident,  // I
-//    Plus,   // P
-//    Multi   // M
-//};
-
 enum Action
 {   // 动作
     Accept, // acc

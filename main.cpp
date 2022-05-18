@@ -15,22 +15,23 @@ int main() {
         vector<pair<string, string>> token_list;
         // 获取token序列
         token_list = tokenlizer(infile, outfile);
+
+        cout << endl<< "++++++ 中间代码及计算结果 ++++" << endl;
         vector<pair<Element, string>> elements_list;
-//        std::vector<std::pair<Symbol, std::string>> symbols_list;
         int line = 0;
         for (auto token: token_list) {
             if (token.first != "semicolon") {
                 elements_list.emplace_back(get_type(token.first), token.second);
-//                symbols_list.emplace_back(getSymbol(token.first),token.second);
             } else {
                 line++;
                 elements_list.emplace_back(null,""); //$
                 ExpressionCalculator calculator;
+                cout << "==== 第" << line << "行 ==== " << endl;
                 cout << calculator.calculate(elements_list) << endl;
                 if (expression_validator(elements_list)) {
-                    cout << "OK" << endl;
+                    cout << "OK" << endl<< endl;
                 } else {
-                    cout << " occur at line: " << line << endl;
+                    cout << " occur at line: " << line << endl<< endl;
                 }
                 elements_list.clear();
             }

@@ -165,18 +165,18 @@ const std::vector<std::map<Element, std::pair<Action, int>>> ExpressionCalculato
                 {slash, {Reduce, 4}},
                 {null, {Reduce, 4}}}};
 
-Element getElement(const std::string& s)
-{
-    if (s == "number") return number;
-    if (s == "ident") return ident;
-    if (s == "plus") return plus_;
-    if (s == "minus") return minus_;
-    if (s == "times") return times;
-    if (s == "slash") return slash;
-    if (s == "lparen") return lparen;
-    if (s == "rparen") return rparen;
-    throw NoSuchElementException();
-}
+//Element getElement(const std::string& s)
+//{
+//    if (s == "number") return number;
+//    if (s == "ident") return ident;
+//    if (s == "plus") return plus_;
+//    if (s == "minus") return minus_;
+//    if (s == "times") return times;
+//    if (s == "slash") return slash;
+//    if (s == "lparen") return lparen;
+//    if (s == "rparen") return rparen;
+//    throw NoSuchElementException();
+//}
 std::ostream& operator<<(std::ostream& out, const Element& obj)
 {
     switch (obj)
@@ -283,11 +283,12 @@ TResult ExpressionCalculator::getLexval(Element obj, std::string token)
 {
     if (obj == number) return std::stoi(token);
     if (obj < number) return static_cast<TResult>(obj);
+    std::cout << static_cast<TResult>(obj);
     return 0;
 }
 
 TResult ExpressionCalculator::calc(TResult lhs, TResult op, TResult rhs)
-{
+{   // 计算四则运算，并返回结果。参数：左操作数，运算符，右操作数
     if (op == plus_) return lhs + rhs;
     if (op == minus_) return lhs - rhs;
     if (op == times) return lhs * rhs;
@@ -298,7 +299,7 @@ TResult ExpressionCalculator::calc(TResult lhs, TResult op, TResult rhs)
 }
 
 TResult ExpressionCalculator::calc(TResult op, TResult rhs)
-{
+{   // 计算正/负值
     if (op == plus_) return +rhs;
     if (op == minus_) return -rhs;
     // :(
@@ -335,58 +336,60 @@ TResult ExpressionCalculator::calculate(const std::vector<std::pair<Element, std
 {
     // state, token, result, id
     int counter = 0;
-    std::stack<std::tuple<int, Element, std::pair<TResult, std::string>>> s;    // 状态，符号，数值，id 栈
-    s.push(std::make_tuple(0, null, std::make_pair(0, "")));
-    for (auto&& [element, token] : elements)
+    std::stack<std::tuple<int, Element, std::pair<TResult, std::string>>> s;    // 状态，符号，计算值，id 栈
+    s.push(std::make_tuple(0, null, std::make_pair(0, "")));    // 初始状态入栈：(0，#，(0，“”))
+    for (auto&& [element, token] : elements)    // 对读入行进行分析计算
     {
+        if(element == error){
+            std::cout << "非法运算符，请调整测试样例！" << std::endl;
+        }
         for (;;)
         {
             auto action = getNext(std::get<0>(s.top()), element);
             // 根据获取的Action类型，进行下一步分析。
             if (action.first == Shift)
-            {   // 移进
+            {   // 移进,(状态，符号，(计算值，token))入栈
                 s.push(std::make_tuple(action.second, element,
                                        std::make_pair(getLexval(element, token), token)));
                 break;
             }
             else if (action.first == Reduce)
-            {
-                auto it = getReduce(action.second);
-                auto reduce = it.second;
+            {   // 规约
+                auto it = getReduce(action.second);   //获取规约文法
+                auto reduce = it.second;    // 从右往左，出栈
                 std::reverse(reduce.begin(), reduce.end());
-                static std::pair<TResult, std::string> buffer[3];
+                static std::pair<TResult, std::string> buffer[3];   // 存放中间状态
                 static int sz;
                 sz = 0;
                 for (auto&& r : reduce)
                 {
                     assert(r == std::get<1>(s.top()));
-                    buffer[sz++] = std::get<2>(s.top());
-                    s.pop();
+                    buffer[sz++] = std::get<2>(s.top());    // 栈顶的计算值压入buffer暂存
+                    s.pop();    // 出栈
                 }
                 std::pair<TResult, std::string> res;
                 if (sz == 1)
-                    res = buffer[0];
+                    res = buffer[0];    // buffer仅有单个元素，直接返回该元素。
                 else if (sz == 2)
-                {
+                {   // buffer有2个元素，计算结果，并输出中间代码。
                     res = std::make_pair(calc(buffer[1].first, buffer[0].first), "t" + std::to_string(++counter));
                     print(static_cast<Element>(buffer[1].first), buffer[0], res);
                 }
                 else if (sz == 3)
-                {
-                    if (buffer[2].second == "(" && buffer[0].second == ")")
+                {   // buffer有3个元素，分类讨论。
+                    if (buffer[2].second == "(" && buffer[0].second == ")") // 含括号情况，直接返回中间值。
                         res = buffer[1];
                     else
-                    {
+                    {   // 3元计算式，计算结果，并输出中间代码。
                         res = std::make_pair(calc(buffer[2].first, buffer[1].first, buffer[0].first), "t" + std::to_string(++counter));
-                        print(static_cast<Element>(buffer[1].first), buffer[2], buffer[0], res);
+                        print(static_cast<Element>(buffer[1].first), buffer[2], buffer[0], res);    // 输出四元组
                     }
                 }
                 else //:(
                     assert(false);
-                auto go = getNext(std::get<0>(s.top()), it.first);
-                assert(go.first == Goto);
-                // std::cerr << go.first << ' ' << go.second << std::endl;
-                s.push(std::make_tuple(go.second, it.first, res));
+                auto go = getNext(std::get<0>(s.top()), it.first);  // 获取下一步Action
+                assert(go.first == Goto);   // Action仅能为Reduce / Shift / Accept
+                s.push(std::make_tuple(go.second, it.first, res));  // 状态入栈，继续分析。
             }
             else if (action.first == Accept)
                 return std::get<2>(s.top()).first;
