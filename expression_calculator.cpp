@@ -329,7 +329,7 @@ TResult ExpressionCalculator::calculate(const std::vector<std::pair<Element, std
     for (auto&& [element, token] : elements)    // 对读入行进行分析计算
     {
         if(element == error){
-            std::cout << "非法运算符，请调整测试样例！" << std::endl;
+            std::cout << "illegal operator, please rewrite your testing files" << std::endl;
         }
         for (;;)
         {
