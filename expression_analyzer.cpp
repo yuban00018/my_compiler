@@ -92,8 +92,7 @@ bool expression_validator(const std::vector<std::pair<Element, std::string>> &el
             for (auto &it: t) s.push(it); // 入栈
         }
         if (s.top() != token.first) { // 如果token类型和顶部（此时为终结符）不匹配，出错
-            std::cout << counter << ':';
-            std::cout << get_error_type(token.first) << '\n';
+            std::cout << get_error_type(token.first) << " at line "<<counter;
             return false;
         }
         s.pop();
