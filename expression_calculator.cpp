@@ -313,8 +313,8 @@ void ExpressionCalculator::print(Element op,
                                  std::pair<TResult, std::string> res)
 {
     std::cout << '(' << op << ',';
-    std::cout << ' ' << ',';
     __printitem(rhs);
+    std::cout<<", ";
     std::cout << ',';
     __printitem(res);
     std::cout << ')' << std::endl;
@@ -356,8 +356,18 @@ TResult ExpressionCalculator::calculate(const std::vector<std::pair<Element, std
                     s.pop();    // 出栈
                 }
                 std::pair<TResult, std::string> res;
-                if (sz == 1)
+                if (sz == 1) {
+                    auto temp = buffer[0];
                     res = buffer[0];    // buffer仅有单个元素，直接返回该元素。
+                    if(reduce[0]==number){
+                        buffer[0].second="t"+std::to_string(++counter);
+                        res = buffer[0];
+                    std::cout << "(:=" << ',';
+                    __printitem(temp);
+                    std::cout << ", ";
+                    std::cout << ",t"+std::to_string(counter);
+                    std::cout << ')' << std::endl;}
+                }
                 else if (sz == 2)
                 {   // buffer有2个元素，计算结果，并输出中间代码。
                     res = std::make_pair(calc(buffer[1].first, buffer[0].first), "t" + std::to_string(++counter));
