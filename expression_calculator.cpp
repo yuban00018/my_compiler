@@ -358,8 +358,8 @@ TResult ExpressionCalculator::calculate(const std::vector<std::pair<Element, std
                 std::pair<TResult, std::string> res;
                 if (sz == 1) {
                     auto temp = buffer[0];
-                    res = buffer[0];    // buffer仅有单个元素，直接返回该元素。
-                    if(reduce[0]==number){
+                    res = buffer[0];
+                    if(reduce[0]==number){ // 当数字被规约时，输出四元式
                         buffer[0].second="t"+std::to_string(++counter);
                         res = buffer[0];
                     std::cout << "(:=" << ',';
